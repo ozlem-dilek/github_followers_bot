@@ -32,38 +32,40 @@ class Github:
     def getFollowers(self):
         self.browser.get(f"https://github.com/{self.username}?tab=followers")
         time.sleep(2)
+        pagination_container = self.browser.find_element(By.CLASS_NAME, "paginate-container")
+        links = pagination_container.find_elements(By.TAG_NAME, "a")
 
-        self.loadFollowers()
+        if pagination_container is not None:
+                if len(links) == 1:
+                    if links[0].text == "Next":
+                        links[0].click()
+                        time.sleep(1)
+                        self.loadFollowers()
 
-        while True:
-            links = self.browser.find_element(By.CSS_SELECTOR, ".pagination").find_elements(By.TAG_NAME, "a")
+                elif len(links) == 0:
+                    self.loadFollowers()
+                
+                else:
+                    for link in links:
+                        if link.text == "Next":
+                            link.click()
+                            time.sleep(1)
+                            
+                            self.loadFollowers()
 
-            if len(links) == 1:
-                if links[0].text == "Next":
-                    links[0].click()
-                    time.sleep(1)
+
+                        else:
+                            continue
+
+        else:
                     self.loadFollowers()
 
 
-                else:
-                    break
-            
-            else:
-                for link in links:
-                    if link.text == "Next":
-                        link.click()
-                        time.sleep(1)
-                        
-                        self.loadFollowers()
-
-
-                    else:
-                        continue
 
 print(username, password)
 github = Github(username, password)
 github.signIn()
 github.getFollowers()
-print(github.followers)
-print(len(github.followers))
+print("followers: ", github.followers)
+print("follower count: ", len(github.followers))
 time.sleep(3)
